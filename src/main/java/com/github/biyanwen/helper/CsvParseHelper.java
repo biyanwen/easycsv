@@ -89,7 +89,7 @@ public class CsvParseHelper {
 				offset += size - 1;
 				Class<?> clazz = t.getClazz();
 				if (clazz.equals(None.class)) {
-					throw new CsvParseException("size > 1 时需要配置 @OutputField#clazz 方法");
+					throw new CsvParseException("size > 1 时需要配置 @CsvProperty#clazz 方法");
 				}
 				List<String> strings = new ArrayList<>(Arrays.asList(splitResult).subList(index, index + size));
 				List<Object> collect = strings.stream().map(str -> ConvertUtils.convert(str, clazz))

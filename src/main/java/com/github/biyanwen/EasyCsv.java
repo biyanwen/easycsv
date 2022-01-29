@@ -3,7 +3,9 @@ package com.github.biyanwen;
 import cn.hutool.core.util.StrUtil;
 import com.github.biyanwen.api.CsvReadContext;
 import com.github.biyanwen.api.CsvFileParser;
+import com.github.biyanwen.api.CsvWriteContext;
 import com.github.biyanwen.impl.DefaultCsvReadContext;
+import com.github.biyanwen.impl.DefaultCsvWriteContext;
 
 /**
  * 简单csv
@@ -33,4 +35,26 @@ public class EasyCsv {
 				.withCsvFileParser(csvFileParser)
 				.build();
 	}
+
+	public static CsvWriteContext write(String filePath, Class clazz) {
+		return write(filePath, clazz, null);
+	}
+
+	/**
+	 * 写
+	 *
+	 * @param filePath 文件路径
+	 * @param clazz    clazz
+	 * @param encoding 编码
+	 * @return {@link CsvWriteContext}
+	 */
+	public static CsvWriteContext write(String filePath, Class clazz, String encoding) {
+		encoding = StrUtil.isBlank(encoding) ? "GBK" : encoding;
+		return DefaultCsvWriteContext.createBuilder()
+				.withFilePath(filePath)
+				.withWriteClass(clazz)
+				.withEncoding(encoding)
+				.build();
+	}
+
 }

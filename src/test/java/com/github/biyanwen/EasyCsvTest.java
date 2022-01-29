@@ -4,6 +4,7 @@ import com.github.biyanwen.api.CsvReadContext;
 import com.github.biyanwen.bean.HeadTestBean;
 import com.github.biyanwen.bean.TestOutputBean;
 import com.github.biyanwen.bean.TogetherNameAndIndex;
+import com.github.biyanwen.bean.WriteTestBean;
 import com.github.biyanwen.impl.PageCsvParser;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -105,5 +106,17 @@ class EasyCsvTest {
 		List<Integer> integers = Arrays.asList(3, 3, 3);
 		assertEquals(integers, headTestBean.getIntegerList());
 		assertEquals(new BigDecimal("4"), headTestBean.getValue());
+	}
+
+	@SneakyThrows
+	@Test
+	public void test_for_write() {
+		String file = Thread.currentThread().getContextClassLoader().getResource("").getFile();
+		String path = new File(file, "/file/WRITE.csv").getCanonicalPath();
+
+		List<WriteTestBean> writeTestBeans = Arrays.asList(new WriteTestBean(1, "小明", 18),
+				new WriteTestBean(2, "lina", 22));
+		EasyCsv.write(path,WriteTestBean.class)
+				.doWrite(writeTestBeans);
 	}
 }

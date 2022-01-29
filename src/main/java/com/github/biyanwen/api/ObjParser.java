@@ -6,13 +6,14 @@ import java.util.List;
  * @Author byw
  * @Date 2022/1/7 10:48
  */
-public interface InputObjParser {
+public interface ObjParser {
 
 	/**
 	 * 解析
 	 *
 	 * @param objects 对象
+	 * @param csvWriteContext
 	 * @return {@link List}<{@link String}>
 	 */
-	List<String> doParse(List<Object> objects);
+	String doParse(List<Object> objects, CsvWriteContext csvWriteContext);
 }
