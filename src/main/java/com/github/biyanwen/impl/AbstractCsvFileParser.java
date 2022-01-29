@@ -2,6 +2,7 @@ package com.github.biyanwen.impl;
 
 import com.github.biyanwen.api.CsvContext;
 import com.github.biyanwen.api.CsvFileParser;
+import com.github.biyanwen.exception.CsvParseException;
 import com.github.biyanwen.helper.CsvParseHelper;
 import lombok.SneakyThrows;
 
@@ -24,6 +25,11 @@ public abstract class AbstractCsvFileParser<T> implements CsvFileParser {
 	 * csv上下文
 	 */
 	private CsvContext csvContext;
+
+	/**
+	 * 第一行/表头
+	 */
+	private String head;
 
 	@Override
 	public void doParse(CsvContext csvContext) {
@@ -56,16 +62,29 @@ public abstract class AbstractCsvFileParser<T> implements CsvFileParser {
 	private void parse2Objects(String path) {
 		try (Stream<String> stream = Files.lines(Paths.get(path), Charset.forName(csvContext.getEncoding()))) {
 			stream.skip(csvContext.getSkip()).forEach(t -> {
-				T result = (T) CsvParseHelper.getResult(t, csvContext.getClazz());
-				invoke(result);
+				if (head == null) {
+					head = t;
+				}
+
+				if (exeHead(csvContext.hasHead(), head.equals(t))) {
+					T result = (T) CsvParseHelper.getResult(t, csvContext.getClazz(), head, csvContext.hasHead());
+					invoke(result);
+				}
 			});
 		}
+	}
+
+	private boolean exeHead(boolean hasHead, boolean equalsHead) {
+		if (hasHead && equalsHead) {
+			return false;
+		}
+		return true;
 	}
 
 	private void check(String path) {
 		Path filePath = Paths.get(path);
 		if (!Files.exists(filePath)) {
-			throw new RuntimeException("File is not found：" + path);
+			throw new CsvParseException("File is not found：" + path);
 		}
 	}
 }

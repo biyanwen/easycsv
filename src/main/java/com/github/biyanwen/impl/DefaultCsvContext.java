@@ -1,7 +1,13 @@
 package com.github.biyanwen.impl;
 
+import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.github.biyanwen.annotation.CsvProperty;
 import com.github.biyanwen.api.CsvContext;
 import com.github.biyanwen.api.CsvFileParser;
+import com.github.biyanwen.exception.CsvParseException;
+
+import java.lang.reflect.Field;
 
 /**
  * 默认csv上下文
@@ -16,6 +22,7 @@ public class DefaultCsvContext implements CsvContext {
 	private String path;
 	private CsvFileParser csvFileParser;
 	private int skip = 0;
+	private boolean hasHead = false;
 
 	@Override
 	public void setEncoding(String encoding) {
@@ -54,6 +61,11 @@ public class DefaultCsvContext implements CsvContext {
 	}
 
 	@Override
+	public boolean hasHead() {
+		return hasHead;
+	}
+
+	@Override
 	public int getSkip() {
 		return this.skip;
 	}
@@ -74,6 +86,7 @@ public class DefaultCsvContext implements CsvContext {
 		private String path;
 		private CsvFileParser csvFileParser;
 		private int skip = 0;
+		private boolean hasHead = false;
 
 		private Builder() {
 		}
@@ -89,7 +102,39 @@ public class DefaultCsvContext implements CsvContext {
 
 		public Builder withTClass(Class tClass) {
 			this.tClass = tClass;
+			check(tClass);
 			return this;
+		}
+
+		private void check(Class tClass) {
+			boolean useIndex = checkIfUseIndex(tClass);
+			boolean userName = checkIfUseName(tClass);
+			if (useIndex && userName) {
+				throw new CsvParseException("不可同时使用 CsvProperty#name() 和 CsvProperty#index()");
+			}
+			if (userName) {
+				this.hasHead = true;
+			}
+		}
+
+		private boolean checkIfUseName(Class tClass) {
+			for (Field field : ReflectUtil.getFields(tClass)) {
+				CsvProperty annotation = field.getAnnotation(CsvProperty.class);
+				if (annotation != null && !StrUtil.isBlank(annotation.name())) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private boolean checkIfUseIndex(Class tClass) {
+			for (Field field : ReflectUtil.getFields(tClass)) {
+				CsvProperty annotation = field.getAnnotation(CsvProperty.class);
+				if (annotation != null && annotation.index() != -1) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public Builder withPath(String path) {
@@ -114,6 +159,7 @@ public class DefaultCsvContext implements CsvContext {
 			defaultCsvContext.skip(skip);
 			defaultCsvContext.csvFileParser = this.csvFileParser;
 			defaultCsvContext.tClass = this.tClass;
+			defaultCsvContext.hasHead = this.hasHead;
 			return defaultCsvContext;
 		}
 	}

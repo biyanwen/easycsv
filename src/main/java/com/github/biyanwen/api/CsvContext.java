@@ -1,5 +1,7 @@
 package com.github.biyanwen.api;
 
+import com.github.biyanwen.annotation.CsvProperty;
+
 /**
  * csv上下文
  *
@@ -54,8 +56,17 @@ public interface CsvContext {
 	 * 跳过多少行
 	 *
 	 * @param num 行数
+	 * @return {@link CsvContext}
 	 */
 	CsvContext skip(int num);
+
+	/**
+	 * 如果是 true 就将第一行当做表头读取;
+	 * 判断标准，是否使用了 {@link CsvProperty#name()}
+	 *
+	 * @return boolean
+	 */
+	boolean hasHead();
 
 	/**
 	 * 跳过多少行
