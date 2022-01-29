@@ -3,7 +3,7 @@ package com.github.biyanwen.impl;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.github.biyanwen.annotation.CsvProperty;
-import com.github.biyanwen.api.CsvContext;
+import com.github.biyanwen.api.CsvReadContext;
 import com.github.biyanwen.api.CsvFileParser;
 import com.github.biyanwen.exception.CsvParseException;
 
@@ -15,7 +15,7 @@ import java.lang.reflect.Field;
  * @Author byw
  * @Date 2022/1/27 9:16
  */
-public class DefaultCsvContext implements CsvContext {
+public class DefaultCsvReadContext implements CsvReadContext {
 
 	private String encoding = "GBK";
 	private Class tClass;
@@ -55,7 +55,7 @@ public class DefaultCsvContext implements CsvContext {
 	}
 
 	@Override
-	public CsvContext skip(int num) {
+	public CsvReadContext skip(int num) {
 		this.skip = num;
 		return this;
 	}
@@ -152,8 +152,8 @@ public class DefaultCsvContext implements CsvContext {
 			return this;
 		}
 
-		public DefaultCsvContext build() {
-			DefaultCsvContext defaultCsvContext = new DefaultCsvContext();
+		public DefaultCsvReadContext build() {
+			DefaultCsvReadContext defaultCsvContext = new DefaultCsvReadContext();
 			defaultCsvContext.setEncoding(encoding);
 			defaultCsvContext.setPath(path);
 			defaultCsvContext.skip(skip);

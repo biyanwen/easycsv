@@ -11,7 +11,7 @@ public interface CsvFileParser {
 	/**
 	 * 解析
 	 *
-	 * @param csvContext csv上下文
+	 * @param csvReadContext csv上下文
 	 */
-	void doParse(CsvContext csvContext);
+	void doParse(CsvReadContext csvReadContext);
 }

@@ -1,6 +1,6 @@
 package com.github.biyanwen;
 
-import com.github.biyanwen.api.CsvContext;
+import com.github.biyanwen.api.CsvReadContext;
 import com.github.biyanwen.bean.HeadTestBean;
 import com.github.biyanwen.bean.TestOutputBean;
 import com.github.biyanwen.bean.TogetherNameAndIndex;
@@ -74,7 +74,7 @@ class EasyCsvTest {
 		String path = new File(file, "/file/TEST_out.csv").getCanonicalPath();
 
 		List<HeadTestBean> list = new ArrayList<>();
-		CsvContext context = EasyCsv.read(path, HeadTestBean.class, new PageCsvParser<HeadTestBean>(list::addAll));
+		CsvReadContext context = EasyCsv.read(path, HeadTestBean.class, new PageCsvParser<HeadTestBean>(list::addAll));
 		assertTrue(context.hasHead());
 	}
 

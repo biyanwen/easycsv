@@ -1,6 +1,6 @@
 package com.github.biyanwen.impl;
 
-import com.github.biyanwen.api.CsvContext;
+import com.github.biyanwen.api.CsvReadContext;
 import com.github.biyanwen.api.CsvFileParser;
 import com.github.biyanwen.exception.CsvParseException;
 import com.github.biyanwen.helper.CsvParseHelper;
@@ -24,7 +24,7 @@ public abstract class AbstractCsvFileParser<T> implements CsvFileParser {
 	/**
 	 * csv上下文
 	 */
-	private CsvContext csvContext;
+	private CsvReadContext csvReadContext;
 
 	/**
 	 * 第一行/表头
@@ -32,9 +32,9 @@ public abstract class AbstractCsvFileParser<T> implements CsvFileParser {
 	private String head;
 
 	@Override
-	public void doParse(CsvContext csvContext) {
-		this.csvContext = csvContext;
-		String path = csvContext.getPath();
+	public void doParse(CsvReadContext csvReadContext) {
+		this.csvReadContext = csvReadContext;
+		String path = csvReadContext.getPath();
 		check(path);
 		parse2Objects(path);
 		doAfterAllAnalysed();
@@ -60,14 +60,14 @@ public abstract class AbstractCsvFileParser<T> implements CsvFileParser {
 	 */
 	@SneakyThrows
 	private void parse2Objects(String path) {
-		try (Stream<String> stream = Files.lines(Paths.get(path), Charset.forName(csvContext.getEncoding()))) {
-			stream.skip(csvContext.getSkip()).forEach(t -> {
+		try (Stream<String> stream = Files.lines(Paths.get(path), Charset.forName(csvReadContext.getEncoding()))) {
+			stream.skip(csvReadContext.getSkip()).forEach(t -> {
 				if (head == null) {
 					head = t;
 				}
 
-				if (exeHead(csvContext.hasHead(), head.equals(t))) {
-					T result = (T) CsvParseHelper.getResult(t, csvContext.getClazz(), head, csvContext.hasHead());
+				if (exeHead(csvReadContext.hasHead(), head.equals(t))) {
+					T result = (T) CsvParseHelper.getResult(t, csvReadContext.getClazz(), head, csvReadContext.hasHead());
 					invoke(result);
 				}
 			});

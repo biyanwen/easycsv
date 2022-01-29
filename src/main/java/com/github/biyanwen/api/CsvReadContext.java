@@ -8,7 +8,7 @@ import com.github.biyanwen.annotation.CsvProperty;
  * @Author byw
  * @Date 2022/1/26 19:34
  */
-public interface CsvContext {
+public interface CsvReadContext {
 
 	/**
 	 * 设置字符编码
@@ -56,9 +56,9 @@ public interface CsvContext {
 	 * 跳过多少行
 	 *
 	 * @param num 行数
-	 * @return {@link CsvContext}
+	 * @return {@link CsvReadContext}
 	 */
-	CsvContext skip(int num);
+	CsvReadContext skip(int num);
 
 	/**
 	 * 如果是 true 就将第一行当做表头读取;
