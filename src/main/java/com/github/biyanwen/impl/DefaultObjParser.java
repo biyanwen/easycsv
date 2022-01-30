@@ -32,7 +32,7 @@ public class DefaultObjParser implements ObjParser {
 			appendHead(objects.get(0), fields, buffer);
 		}
 		List<Field> finalFields = fields;
-		objects.parallelStream().forEach(t -> {
+		objects.forEach(t -> {
 			appendData(finalFields, buffer, t);
 			int index = buffer.lastIndexOf(",");
 			buffer.deleteCharAt(index);
@@ -42,6 +42,7 @@ public class DefaultObjParser implements ObjParser {
 
 	@SneakyThrows
 	private void appendHead(Object obj, List<Field> fields, StringBuffer builder) {
+		boolean lastIsMerge = false;
 		for (Field field : fields) {
 			field.setAccessible(true);
 			String name = field.getAnnotation(CsvProperty.class).name();
@@ -50,16 +51,22 @@ public class DefaultObjParser implements ObjParser {
 				Collection<Object> collection = (Collection<Object>) value;
 				int size = collection.size();
 				builder.append(name);
-				for (int i = 1; i < size; i++) {
+				for (int i = 0; i < size; i++) {
 					builder.append(",");
+				}
+				// 说明这是最后一个
+				if (fields.lastIndexOf(field) == fields.size() - 1) {
+					lastIsMerge = true;
 				}
 			} else {
 				builder.append(name).append(",");
 			}
 		}
+		if (!lastIsMerge) {
+			int index = builder.lastIndexOf(",");
+			builder.deleteCharAt(index);
+		}
 		builder.append(System.lineSeparator());
-		int index = builder.lastIndexOf(",");
-		builder.deleteCharAt(index);
 	}
 
 	/**

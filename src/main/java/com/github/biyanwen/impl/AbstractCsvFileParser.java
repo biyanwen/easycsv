@@ -65,7 +65,6 @@ public abstract class AbstractCsvFileParser<T> implements CsvFileParser {
 				if (head == null) {
 					head = t;
 				}
-
 				if (exeHead(csvReadContext.hasHead(), head.equals(t))) {
 					T result = (T) CsvParseHelper.getResult(t, csvReadContext.getClazz(), head, csvReadContext.hasHead());
 					invoke(result);

@@ -1,10 +1,7 @@
 package com.github.biyanwen;
 
 import com.github.biyanwen.api.CsvReadContext;
-import com.github.biyanwen.bean.HeadTestBean;
-import com.github.biyanwen.bean.TestOutputBean;
-import com.github.biyanwen.bean.TogetherNameAndIndex;
-import com.github.biyanwen.bean.WriteTestBean;
+import com.github.biyanwen.bean.*;
 import com.github.biyanwen.impl.PageCsvParser;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -13,6 +10,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -114,9 +112,44 @@ class EasyCsvTest {
 		String file = Thread.currentThread().getContextClassLoader().getResource("").getFile();
 		String path = new File(file, "/file/WRITE.csv").getCanonicalPath();
 
-		List<WriteTestBean> writeTestBeans = Arrays.asList(new WriteTestBean(1, "小明", 18),
-				new WriteTestBean(2, "lina", 22));
-		EasyCsv.write(path,WriteTestBean.class)
+		List<WriteTestBean> writeTestBeans = Collections.singletonList(new WriteTestBean(1, "小明", 18));
+		EasyCsv.write(path, WriteTestBean.class)
 				.doWrite(writeTestBeans);
+
+		List<WriteTestBean> list = new ArrayList<>();
+		EasyCsv.read(path, WriteTestBean.class, new PageCsvParser<WriteTestBean>(list::addAll))
+				.doRead();
+
+		assertEquals(1, list.size());
+		WriteTestBean one = list.get(0);
+		assertEquals(1, one.getId());
+		assertEquals("小明", one.getName());
+		assertEquals(18, one.getAge());
+	}
+
+	@SneakyThrows
+	@Test
+	public void test_for_write_list_field() {
+		String file = Thread.currentThread().getContextClassLoader().getResource("").getFile();
+		String path = new File(file, "/file/WRITE_LIST.csv").getCanonicalPath();
+
+		WriteListTestBean writeListTestBean = new WriteListTestBean();
+		writeListTestBean.setId(1);
+		writeListTestBean.setName("小黑");
+		writeListTestBean.setFriends(Arrays.asList("小明", "胖虎", "小丽"));
+
+		WriteListTestBean writeListTestBeanTwo = new WriteListTestBean();
+		writeListTestBeanTwo.setId(2);
+		writeListTestBeanTwo.setName("小明");
+		writeListTestBeanTwo.setFriends(Arrays.asList("小黑", "胖虎", "小丽"));
+
+		List<WriteListTestBean> writeListTestBeans = Arrays.asList(writeListTestBean, writeListTestBeanTwo);
+		EasyCsv.write(path, WriteListTestBean.class).doWrite(writeListTestBeans);
+
+		List<ReadListTestBean> list = new ArrayList<>();
+		EasyCsv.read(path, ReadListTestBean.class, new PageCsvParser<ReadListTestBean>(list::addAll))
+				.doRead();
+		assertEquals(2, list.size());
+		assertEquals(3, list.get(0).getFriends().size());
 	}
 }

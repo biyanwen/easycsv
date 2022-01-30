@@ -26,7 +26,6 @@ public class DefaultCsvFileWriter implements CsvFileWriter {
 	public void doWrite(List<Object> objects, CsvWriteContext csvWriteContext) {
 		createFile(csvWriteContext.getFilePath());
 		String string = ObjParserFactory.getDefaultParser().doParse(objects, csvWriteContext);
-		System.out.println(string);
 		Files.write(Paths.get(csvWriteContext.getFilePath()), string.getBytes(csvWriteContext.getEncoding()));
 	}
 

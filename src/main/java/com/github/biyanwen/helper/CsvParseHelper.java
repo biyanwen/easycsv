@@ -40,7 +40,7 @@ public class CsvParseHelper {
 	}
 
 	private static List<FieldWrapper> createByHead(String head, List<Field> fields) {
-		List<String> headList = Arrays.asList(head.split(","));
+		List<String> headList = Arrays.asList(StrSplitHelper.split(head, ','));
 		List<FieldWrapper> fieldWrappers = new ArrayList<>(headList.size());
 		List<String> headListNoBlank = headList.stream().filter(StrUtil::isNotBlank).collect(Collectors.toList());
 		for (Field field : fields) {

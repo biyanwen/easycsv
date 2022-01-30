@@ -16,6 +16,9 @@ public class WriteTestBean {
 	@CsvProperty(name = "年龄")
 	private Integer age;
 
+	public WriteTestBean() {
+	}
+
 	public WriteTestBean(Integer id, String name, Integer age) {
 		this.id = id;
 		this.name = name;
