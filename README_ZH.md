@@ -1,14 +1,13 @@
 ## EasyCsv
 
-English | [中文](README_ZH.md)
+EasyCsv 是一个基于Java的简单、省内存的读写 csv 的开源项目。
 
-EasyCsv is a tool that can read and write a CSV file simplify.
+## 快速开始
 
-## Quick Start
-
-maven address
+maven 依赖
 
 ~~~xml
+
 <dependency>
     <groupId>com.github.biyanwen</groupId>
     <artifactId>easycsv</artifactId>
@@ -16,15 +15,14 @@ maven address
 </dependency>
 ~~~
 
-### Read a CSV
+### 读 csv
 
-#### Read a CSV with no table head/Read a CSV with a table index.
+#### 无表头的读/索引读
 
-You can only use a table index to read a CSV when the table does not have a table head. For example :
-
+如果 csv 没有表头的话就只能通过**索引**读取数据了。 csv 无表头示例：
 ![img.png](img.png)
 
-**Define the class**：
+**实体定义**：
 
 ~~~java
 
@@ -45,54 +43,66 @@ public class TestOutputBean {
 }
 ~~~
 
-You must use the @CsvProperty annotation of the EasyCsv provided on the field if you want the field to be identified.
-The `index()` method of the @CsvProperty provided can set a mapping that records the relationship on a field and a
-table. EasyCsv provides the function that can merge cell as same as Excel. So if you want to use the function, you
-should set the `size()` and `class()` and non-parameter constructor.
+需要被赋值的字段必须配置 @CsvProperty 注解，否则会被过滤掉。 index 代表字段的顺序。EasyCsv 能够将多个数据收集到一个集合中(类似 excel 合并单元格)，为此你需要指定 size
+的大小，及需要转换成什么类型（因为 Java 类型擦除机制，所以不能自动获取 List 中的泛型类型）,并且必须有**无参构造函数**。
 
-**Create a parser**：
+**创建解析器**：
 
 ~~~java
 public class DemoCsvParser extends AbstractCsvFileParser<TestOutputBean> {
 	/**
-	 * Save every 3000 data.
+	 * 每隔3000条存储数据库，然后清理list ，方便内存回收
 	 */
 	public static final int BATCH_COUNT = 3000;
 	/**
-	 * The data of the cache.
+	 * 缓存的数据
 	 */
 	private List<TestOutputBean> cachedData = new ArrayList<>(BATCH_COUNT);
 	/**
-	 * DAO
+	 * 假设这个是一个DAO，当然有业务逻辑这个也可以是一个service。当然如果不用存储这个对象没用。
 	 */
 	private TestOutputDAO testOutputDAO;
 
 	public DemoCsvParser() {
-		// This is for test.
+		// 这里是demo，所以随便new一个。实际使用如果到了spring,请使用下面的有参构造函数
 		testOutputDAO = new DemoDAO();
 	}
 
+	/**
+	 * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
+	 *
+	 * @param testOutputDAO
+	 */
 	public DemoCsvParser(TestOutputDAO testOutputDAO) {
 		this.testOutputDAO = testOutputDAO;
 	}
 
 	/**
-	 * This method will invoke when any data is parsed.
+	 * 这个每一条数据解析都会来调用
 	 */
 	@Override
 	protected void invoke(T data) {
 		cachedData.add(data);
+		// 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
 		if (cachedData.size() >= BATCH_COUNT) {
 			saveData();
+			// 存储完成清理 list
 			cachedData = new ArrayList<>(BATCH_COUNT);
 		}
 	}
 
+	/**
+	 * 所有数据解析完成了 会来调用,防止有数据没有被保存
+	 *
+	 */
 	@Override
 	protected void doAfterAllAnalysed() {
 		saveData();
 	}
 
+	/**
+	 * 加上存储数据库
+	 */
 	private void saveData() {
 		testOutputDAO.save(cachedData);
 	}
@@ -100,7 +110,7 @@ public class DemoCsvParser extends AbstractCsvFileParser<TestOutputBean> {
 
 ~~~
 
-**Invoke EasyCsv#read method**
+**调用 EasyCsv#read 方法**
 
 ~~~java
 class EasyCsvTest {
@@ -116,7 +126,7 @@ class EasyCsvTest {
 }
 ~~~
 
-You can use the built-in parser `PageCsvParser` to simplify the job.For example :
+当然你可能认为每次都创建解析器很麻烦,所以本工具提供了**内置的解析器**,可以直接使用，增加开发效率。 这个解析器是 PageCsvParser 使用方式如下:
 
 ~~~java
 
@@ -124,7 +134,7 @@ class EasyCsvTest {
 
 	@Test
 	void read() {
-		// This is for test.
+		// 这里只是 demo 所以直接 new dao 了
 		TestOutputDAO dao = new TestOutputDAO();
 		String file = Thread.currentThread().getContextClassLoader().getResource("").getFile();
 		String path = new File(file, "/file/TEST_out.csv").getCanonicalPath();
@@ -135,9 +145,9 @@ class EasyCsvTest {
 }
 ~~~
 
-##### You can start reading the CSV file with any row.
+##### 跳跃指定行数的读
 
-You can invoke the `skip()` method of the `EasyCsv.class` provides to skip a specific number of rows. For example:
+你可以通过配置，达到从指定行开始读的目的。**这个特性只适用于用索引去读**. 代码示例：
 
 ~~~java
 
@@ -145,27 +155,29 @@ class EasyCsvTest {
 
 	@Test
 	void read() {
+		// 这里只是 demo 所以直接 new dao 了
 		TestOutputDAO dao = new TestOutputDAO();
 		String file = Thread.currentThread().getContextClassLoader().getResource("").getFile();
 		String path = new File(file, "/file/TEST_out.csv").getCanonicalPath();
 
 		EasyCsv.read(path, TestOutputBean.class, new PageCsvParser<TestOutputBean>(list -> dao.save(list)))
-				//Skip a specific number of rows.
+				//这里调用 skip 可以跳跃一定行数
 				.skip(num)
 				.doRead();
 	}
 }
 ~~~
 
-#### Read a CSV with table head
+#### 有表头的读/通过表头读
 
-For example:
+当 csv 有表头时可以使用表头读取指定数据。 csv 示例如下：
 
 ![img_1.png](img_1.png)
 
-**Define a Class**
+**定义实体**
 
 ~~~java
+
 @Data
 public class WriteTestBean {
 	@CsvProperty(name = "标识")
@@ -186,7 +198,7 @@ public class WriteTestBean {
 }
 ~~~
 
-**Invoke EasyCsv#read method**
+**调用 EasyCsv#read** 方法
 
 ~~~java
 class EasyCsvTest {
@@ -203,9 +215,9 @@ class EasyCsvTest {
 }
 ~~~
 
-### Write a csv file.
+### 写 csv
 
-**Define a Class**
+**定义实体**
 
 ~~~java
 
@@ -229,7 +241,7 @@ public class WriteTestBean {
 }
 ~~~
 
-**Invoke EasyCsv#write method**
+**调用 EasyCsv#write** 方法
 
 ~~~java
 class EasyCsvTest {
@@ -246,15 +258,15 @@ class EasyCsvTest {
 }
 ~~~
 
-**Result**
+**结果**
 
 ![img_1.png](img_1.png)
 
-**Merge cell**
+**合并单元格**
 
-A CSV file does not have the merge cell function, but we can simulate it by ourselves. For example :
+其实 csv 中并不存在真正的合并单元格，但是我们可以自己模拟出来相同的功能。唯一不同的就是实体的定义，代码如下：
 
-**Define a Class**
+**定义写实体**:
 
 ~~~java
 
@@ -269,12 +281,12 @@ public class WriteListTestBean {
 }
 ~~~
 
-The field that name "friends", can simulate a merge cell function. After writing the CSV file, you can read the data
-which name "friends" in a list by using this tool. For example :
+其中“朋友们”就是对合并单元格的模拟，它会将集合中的元素都放在“朋友们”这个表头的下面。之后你通过本工具进行解析的时候，本工具就会自动的将对应的数据收集到“朋友们”这个集合中，这样就达到了合并单元格的效果。
 
-**Define a Class**
+**定义读实体**:
 
 ~~~java
+
 @Data
 public class WriteListTestBean {
 	@CsvProperty(name = "标识")
@@ -285,6 +297,8 @@ public class WriteListTestBean {
 	private List<String> friends;
 }
 ~~~
+
+合并单元格完整实例代码如下：
 
 ~~~java
 class EasyCsvTest {
@@ -315,4 +329,6 @@ class EasyCsvTest {
 	}
 }
 ~~~
+ps: 合并单元格只是本项目对其功能进行的模拟，本项目提供生成和解析的功能，所以你用一些编辑器打开 csv 后并不能渲染出真正的合并单元格的效果。
+更多使用示例请查看本项目的测试类 EasyCsvTest。
 
