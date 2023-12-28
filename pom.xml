@@ -6,7 +6,7 @@
 
     <groupId>com.github.biyanwen</groupId>
     <artifactId>easycsv</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <name>easycsv</name>
     <description>easycsv</description>
@@ -121,7 +121,7 @@
                     <reportsDirectory>${project.build.directory}/reports</reportsDirectory>
                 </configuration>
             </plugin>
-            <plugin>
+<!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.4</version>
@@ -167,7 +167,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 
@@ -198,7 +198,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.22</version>
-            <scope>provided</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
         <dependency>
